@@ -56,9 +56,7 @@ export default {
         }],
       },
       form: {
-        // todo change video_id type to string
-        // eslint-disable-next-line radix
-        video_id: parseInt(this.$route.params.videoID),
+        video_id: this.$route.params.videoID,
         info: '',
       },
       comments: [],
@@ -71,8 +69,7 @@ export default {
           this.video = res.data;
           this.playerOptions.sources[0].src = this.video.url;
         });
-      // eslint-disable-next-line radix
-      commentAPI.getComments(parseInt(this.$route.params.videoID))
+      commentAPI.getComments(this.$route.params.videoID)
         .then((res) => {
           this.comments = res.data.items;
         });

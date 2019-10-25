@@ -4,7 +4,6 @@ const path = require('path');
 module.exports = {
   resolve: {
     alias: {
-      // eslint-disable-next-line global-require
       '@': path.resolve(__dirname, 'src'),
     },
   },
