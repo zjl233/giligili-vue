@@ -73,10 +73,6 @@ export default {
         const oReq = new XMLHttpRequest();
         oReq.open('PUT', res.data.put, true);
         oReq.send(option.file);
-        oReq.onload = () => {
-          this.imageUrl = res.data.get;
-          this.form.avatar = res.data.key;
-        };
       }).catch((error) => {
         this.$notify.error({
           title: '网路错误，或者服务器宕机',
