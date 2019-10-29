@@ -27,9 +27,49 @@
         <div class="comment" v-for="(item, i) in comments" :key="item.id">
           <div class="comment-info">
             {{i+1}}楼
+            作者
             {{ item.created_at | moment('YYYY-MM-DD h:mm:ss')}}
           </div>
           <div class="comment-content">{{item.info}}</div>
+          <div class="comment-action">
+            <i class="el-icon-edit"></i>
+            <span class="add-comment" @click="toggleReplyForm(item.id)">回复</span>
+            <div class="reply-dialog" v-if="showFormID === item.id">
+              <el-form ref="form" :model="reply" label-width="80px">
+                <el-form-item label="活动名称">
+                  <el-input v-model="reply.info" placeholder="请输入回复"></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="createReply(item.id)">立即创建</el-button>
+                  <el-button>取消</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+          <div class="reply-list">
+            <div class="comment" v-for="r in item.replies" :key="r.id">
+              <div class="comment-info">
+                {{ r.created_at | moment('YYYY-MM-DD h:mm:ss')}}
+              </div>
+              <div class="comment-content">{{r.info}}</div>
+              <div class="comment-action">
+                <i class="el-icon-edit"></i>
+                <span class="add-comment" @click="toggleReplyForm(r.id)">回复</span>
+                <div class="reply-dialog" v-if="showFormID === r.id">
+                  <el-form ref="form" :model="reply" label-width="80px">
+                    <el-form-item label="活动名称">
+                      <el-input v-model="reply.info" placeholder="请输入回复"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+<!--                       comment have most 2 level, use @replayTo to build thread comment-->
+                      <el-button type="primary" @click="createReply(item.id)">立即创建</el-button>
+                      <el-button>取消</el-button>
+                    </el-form-item>
+                  </el-form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -56,9 +96,15 @@ export default {
         }],
       },
       form: {
-        video_id: this.$route.params.videoID,
+        video_id: this.$route.params.videoID.toString(),
         info: '',
       },
+      reply: {
+        video_id: this.$route.params.videoID.toString(),
+        info: '',
+      },
+      showFormID: -1,
+      input: '',
       comments: [],
     };
   },
@@ -76,6 +122,37 @@ export default {
     },
     onSubmit() {
       commentAPI.postComment(this.form)
+        .then((res) => {
+          if (res.status > 0) {
+            this.$notify.error({
+              title: '评论失败',
+              message: res.msg,
+            });
+          } else {
+            this.$notify({
+              title: '评论成功',
+              message: `您评论的ID为${res.data.id}`,
+              type: 'success',
+            });
+          }
+        })
+        .catch((error) => {
+          this.$notify.error({
+            title: '网路错误，或者服务器宕机',
+            message: error,
+          });
+        });
+    },
+    toggleReplyForm(id) {
+      if (this.showFormID === id) {
+        this.showFormID = -1;
+      } else {
+        this.showFormID = id;
+      }
+    },
+    createReply(parentID) {
+      this.reply.parent_id = parentID.toString();
+      commentAPI.postComment(this.reply)
         .then((res) => {
           if (res.status > 0) {
             this.$notify.error({
@@ -147,5 +224,11 @@ export default {
   line-height: 20px;
   padding: 10px 0;
 }
+
+.reply-list {
+  border-left: 2px solid;
+  margin-left: 30px;
+}
+
 
 </style>
