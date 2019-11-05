@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import * as userAPI from '@/api/user/';
+import * as userAPI from '@/api/user';
 
 export default {
   name: 'Login',
