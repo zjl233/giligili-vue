@@ -16,7 +16,6 @@
       </el-row>
       <div class="block">
         <el-pagination
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :page-size="6"
           layout="prev, pager, next"

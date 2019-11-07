@@ -47,8 +47,8 @@
 </template>
 
 <script>
-import * as API from '@/api/video/';
-import * as uploadAPI from '@/api/upload/';
+import * as API from '@/api/video';
+import * as uploadAPI from '@/api/upload';
 
 export default {
   name: 'PostVideo',
