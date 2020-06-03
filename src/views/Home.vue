@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import * as API from '@/api/video/';
+import * as API from '@/api/video';
 
 export default {
   name: 'home',

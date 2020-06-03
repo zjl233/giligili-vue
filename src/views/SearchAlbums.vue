@@ -1,5 +1,21 @@
 <template>
   <div class="home">
+    <el-form ref="form" :model="form" label-width="80px">
+      <el-form-item label="标题">
+        <el-input v-model="form.title"></el-input>
+      </el-form-item>
+
+      <el-form-item label="类别">
+        <el-input v-model="form.category"></el-input>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit">搜索</el-button>
+      </el-form-item>
+
+
+    </el-form>
+
     <div class="top">
       <el-row :gutter="20">
         <el-col :xs="24" :sm="8" :md="8" v-for="album in albums" :key="album.id">
@@ -28,9 +44,11 @@ export default {
   data() {
     return {
       albums: [],
-      start: 0,
-      limit: 6,
       total: 0,
+      form: {
+        title: '',
+        category: '',
+      },
     };
   },
   methods: {
@@ -39,13 +57,19 @@ export default {
       this.load();
     },
     load() {
-      API.getAlbums(this.start, this.limit).then((res) => {
-        this.albums = res.data.items;
-        this.total = res.data.total;
-      });
+      // API.searchAlbums(this.form.name, this.form.category).then((res) => {
+      //   this.albums = res.data.items;
+      //   this.total = res.data.total;
+      // });
     },
     goAlbum(album) {
       this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
+    },
+    onSubmit() {
+      API.searchAlbums(this.form.title, this.form.category).then((res) => {
+        this.albums = res.data.items;
+        this.total = res.data.total;
+      });
     },
   },
   components: {
@@ -57,7 +81,7 @@ export default {
 </script>
 
 <style>
-i {
+.el-icon-folder-opened {
   font-size: 200px;
 }
 

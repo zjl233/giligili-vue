@@ -1,5 +1,5 @@
 <template>
-  <div class="post-video">
+  <div class="post-album">
     <h2>欢迎投稿：</h2>
     <el-form ref="form" :model="form" label-width="80px">
       <el-form-item label="标题">
@@ -7,35 +7,64 @@
       </el-form-item>
 
       <!--      <el-form-item label="视频地址">-->
-      <!--        <el-input type="url" v-model="form.url"></el-input>-->
+      <!--        <el-input type="photos" v-model="form.photos"></el-input>-->
       <!--      </el-form-item>-->
 
-      <el-form-item label="视频">
-        <el-upload class="video-uploader" action="" :before-upload="BeforeVideoUpload"
-                   :http-request="UploadVideoRequest" multiple
-                   :limit="1" :on-exceed="handleExceed">
-          <el-button size="small" type="primary">点击上传</el-button>
-          <div slot="tip" class="el-upload__tip">只能上传MP4文件，且请您自行压缩</div>
-        </el-upload>
+<!--      <el-form-item label="视频">-->
+<!--        <el-upload class="album-uploader" action="" :before-upload="BeforeAlbumUpload"-->
+<!--                   :http-request="UploadAlbumRequest" multiple-->
+<!--                   :limit="1" :on-exceed="handleExceed">-->
+<!--          <el-button size="small" type="primary">点击上传</el-button>-->
+<!--          <div slot="tip" class="el-upload__tip">只能上传MP4文件，且请您自行压缩</div>-->
+<!--        </el-upload>-->
+<!--      </el-form-item>-->
+
+      <el-form-item label="类别">
+        <el-input v-model="form.category"></el-input>
       </el-form-item>
 
-      <el-form-item label="描述">
-        <el-input type="textarea" v-model="form.info"></el-input>
+      <el-form-item label="可见性">
+        <el-select v-model="form.visibility" placeholder="请选择活动区域">
+          <el-option label="公开" value="public"></el-option>
+          <el-option label="半公开" value="protect"></el-option>
+          <el-option label="绝对私有" value="private"></el-option>
+        </el-select>
       </el-form-item>
 
-      <el-form-item label="视频封面">
+      <el-form-item label="密码">
+        <el-input v-model="form.password"></el-input>
+      </el-form-item>
+
+<!--      <el-form-item label="视频封面">-->
+<!--        <el-upload-->
+<!--          class="avatar-uploader"-->
+<!--          label="描述"-->
+<!--          action=""-->
+<!--          ref="upload"-->
+<!--          :before-upload="beforeAvatarUpload"-->
+<!--          :http-request="fnUploadAvatarRequest"-->
+<!--          :show-file-list="false">-->
+<!--          <img v-if="imageUrl" :src="imageUrl" class="avatar">-->
+<!--          <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
+<!--          <div class="el-upload__tip" slot="tip">只能上传png文件，且不超过500kb</div>-->
+<!--        </el-upload>-->
+<!--      </el-form-item>-->
+
+      <el-form-item>
         <el-upload
-          class="avatar-uploader"
-          label="描述"
-          action=""
-          ref="upload"
+          action="https://jsonplaceholder.typicode.com/posts/"
+          list-type="picture-card"
+          :on-preview="handlePictureCardPreview"
+          :on-remove="handleRemove"
           :before-upload="beforeAvatarUpload"
           :http-request="fnUploadAvatarRequest"
-          :show-file-list="false">
-          <img v-if="imageUrl" :src="imageUrl" class="avatar">
-          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          <div class="el-upload__tip" slot="tip">只能上传png文件，且不超过500kb</div>
+        >
+          <i class="el-icon-plus"></i>
         </el-upload>
+        <el-dialog :visible.sync="dialogVisible">
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </el-dialog>
+
       </el-form-item>
 
       <el-form-item>
@@ -47,11 +76,11 @@
 </template>
 
 <script>
-import * as API from '@/api/video';
+import * as API from '@/api/album';
 import * as uploadAPI from '@/api/upload';
 
 export default {
-  name: 'PostVideo',
+  name: 'PostAlbum',
   data() {
     return {
       imageUrl: '',
@@ -59,13 +88,23 @@ export default {
       dialogVisible: false,
       form: {
         title: '',
-        info: '',
-        url: '',
+        category: '',
+        photos: [],
         avatar: '',
+        region: '',
+        visibility: '',
       },
     };
   },
   methods: {
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
+    },
+
     beforeAvatarUpload(file) {
       const isImage = (file.type === 'image/png' || file.type === 'image/jpeg');
       const isLt2M = file.size / 1024 / 1024 < 2;
@@ -84,8 +123,8 @@ export default {
           oReq.open('PUT', res.data.put, true);
           oReq.send(option.file);
           oReq.onload = () => {
-            this.imageUrl = res.data.get;
-            this.form.avatar = res.data.key;
+            // this.imageUrl = res.data.get;
+            this.form.photos.push(res.data.key);
           };
         })
         .catch((error) => {
@@ -95,57 +134,65 @@ export default {
           });
         });
     },
-    BeforeVideoUpload(file) {
-      const isMP4 = file.type === 'video/mp4';
-      if (!isMP4) {
-        this.$message.error('上传视频只能是 mp4 格式!');
-      }
-      return isMP4;
-    },
-    customColorMethod(percentage) {
-      if (percentage < 50) {
-        return '#909399';
-      }
-      if (percentage < 100) {
-        return '#e6a23c';
-      }
-      return '#67c23a';
-    },
-    handleExceed() {
-      this.$message.warning('仅可上传一个视频');
-    },
-    UploadVideoRequest(option) {
-      uploadAPI.postUploadVideo(option.file.name)
-        .then((res) => {
-          const oReq = new XMLHttpRequest();
-          // 获取上传进度
-          oReq.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              this.percentage = Math.floor(event.loaded / event.total * 100);
-              // 设置进度显示
-              console.log(this.percentage);
-            }
-          };
-          oReq.open('PUT', res.data.put, true);
-          oReq.send(option.file);
-          oReq.onload = () => {
-            this.form.url = res.data.key;
-            this.$notify({
-              title: '视频上传成功',
-              message: 'success',
-              type: 'success',
-            });
-          };
-        })
-        .catch((error) => {
-          this.$notify.error({
-            title: '网路错误，或者服务器宕机',
-            message: error,
-          });
-        });
-    },
+    // BeforeAlbumUpload(file) {
+    //   const isMP4 = file.type === 'album/mp4';
+    //   if (!isMP4) {
+    //     this.$message.error('上传视频只能是 mp4 格式!');
+    //   }
+    //   return isMP4;
+    // },
+    // customColorMethod(percentage) {
+    //   if (percentage < 50) {
+    //     return '#909399';
+    //   }
+    //   if (percentage < 100) {
+    //     return '#e6a23c';
+    //   }
+    //   return '#67c23a';
+    // },
+    // handleExceed() {
+    //   this.$message.warning('仅可上传一个视频');
+    // },
+    // UploadAlbumRequest(option) {
+    //   uploadAPI.postUploadVideo(option.file.name)
+    //     .then((res) => {
+    //       const oReq = new XMLHttpRequest();
+    //       // 获取上传进度
+    //       oReq.upload.onprogress = (event) => {
+    //         if (event.lengthComputable) {
+    //           this.percentage = Math.floor(event.loaded / event.total * 100);
+    //           // 设置进度显示
+    //           console.log(this.percentage);
+    //         }
+    //       };
+    //       oReq.open('PUT', res.data.put, true);
+    //       oReq.send(option.file);
+    //       oReq.onload = () => {
+    //         this.form.photos.push(res.data.key);
+    //         this.$notify({
+    //           title: '视频上传成功',
+    //           message: 'success',
+    //           type: 'success',
+    //         });
+    //       };
+    //     })
+    //     .catch((error) => {
+    //       this.$notify.error({
+    //         title: '网路错误，或者服务器宕机',
+    //         message: error,
+    //       });
+    //     });
+    // },
     onSubmit() {
-      API.postVideo(this.form)
+      if (this.form.visibility !== 'protect' && this.form.password.length !== 0) {
+        this.$notify.error({
+          title: '上传失败',
+          message: '只有【半公开】的相册需要设置密码',
+        });
+      }
+
+
+      API.postAlbum(this.form)
         .then((res) => {
           if (res.status > 0) {
             this.$notify.error({

@@ -13,7 +13,7 @@
       <el-form-item label="确认密码">
         <el-input v-model="form.password_confirm"></el-input>
       </el-form-item>
-      <el-form-item label="视频封面">
+      <el-form-item label="头像">
         <el-upload
           class="avatar-uploader"
           label="描述"
@@ -64,15 +64,20 @@ export default {
       return isImage && isLt2M;
     },
     fnUploadAvatarRequest(option) {
+      // todo refactor the entire upload function
       uploadAPI.postUploadAvatar(option.file.name)
         .then((res) => {
-          const oReq = new XMLHttpRequest();
-          oReq.open('PUT', res.data.put, true);
-          oReq.send(option.file);
-          oReq.onload = () => {
-            this.imageUrl = res.data.get;
-            this.form.avatar = res.data.key;
-          };
+          uploadAPI.putImage(res.data.put, option.file)
+            .then(() => {
+              this.imageUrl = res.data.get;
+              this.form.avatar = res.data.key;
+            })
+            .catch((error) => {
+              this.$notify.error({
+                title: '图片上传失败，网络连接中断',
+                message: error,
+              });
+            });
         })
         .catch((error) => {
           this.$notify.error({

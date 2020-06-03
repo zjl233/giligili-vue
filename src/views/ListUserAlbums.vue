@@ -2,16 +2,10 @@
   <div class="home">
     <div class="top">
       <el-row :gutter="20">
-        <el-col :xs="24" :sm="8" :md="8" v-for="video in videos" :key="video.id">
-          <el-card class="video-card" @click.native="goVideo(video)">
-            <img class="video-avatar" :src="video.avatar">
-            <div>
-              <div class="video-title">{{video.title}}</div>
-              <div class="video-bottom clearfix">
-                <span class="video-info">{{video.info.substring(0, 40)}}</span>
-              </div>
-            </div>
-          </el-card>
+        <el-col :xs="24" :sm="8" :md="8" v-for="album in albums" :key="album.id">
+          <i class="el-icon-folder-opened" @click="goAlbum(album)"></i>
+          <br>
+          {{album.title}}
         </el-col>
       </el-row>
       <div class="block">
@@ -27,13 +21,13 @@
 </template>
 
 <script>
-import * as API from '@/api/video';
+import * as API from '@/api/album';
 
 export default {
   name: 'home',
   data() {
     return {
-      videos: [],
+      albums: [],
       start: 0,
       limit: 6,
       total: 0,
@@ -45,13 +39,13 @@ export default {
       this.load();
     },
     load() {
-      API.getVideos(this.start, this.limit).then((res) => {
-        this.videos = res.data.items;
+      API.getAlbums(this.start, this.limit).then((res) => {
+        this.albums = res.data.items;
         this.total = res.data.total;
       });
     },
-    goVideo(video) {
-      this.$router.push({ name: 'showVideo', params: { videoID: video.id } });
+    goAlbum(album) {
+      this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
     },
   },
   components: {
@@ -63,22 +57,27 @@ export default {
 </script>
 
 <style>
-.video-avatar {
+.el-icon-folder-opened {
+  font-size: 200px;
+}
+
+
+.album-avatar {
   width: 100%;
 }
-.video-title {
+.album-title {
   margin: 4px 0px 4px 0px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 }
-.video-bottom {
+.album-bottom {
   margin-top: 4px;
 }
-.video-info {
+.album-info {
   color: #909399;
 }
-.video-card {
+.album-card {
   margin-bottom: 14px;
   cursor: pointer;
 }
