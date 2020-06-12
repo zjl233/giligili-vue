@@ -26,6 +26,7 @@
 
 <script>
 import * as API from '@/api/album';
+import * as UserAPI from '@/api/user';
 
 export default {
   name: 'ShowAlbum',
@@ -60,6 +61,29 @@ export default {
         .then((res) => {
           this.album = res.data;
           this.photos = res.data.photos;
+
+          UserAPI.userMe().then((res) => {
+            const user = res.data;
+            if (user.id !== this.album.user.id) {
+              this.$notify.error({
+                title: '您不是相册拥有者',
+                message: 'error',
+              });
+              this.$router.push({ name: 'home' })
+            }
+          });
+
+
+          // UserAPI.userMe().then((res) => {
+          //   const user = res.data
+          //
+          //   if (user.id !== this.album.user.id) {
+          //     this.$notify.error({
+          //       title: '您不是改相册的拥有者',
+          //       message: error,
+          //     })
+          //   }
+
           // this.playerOptions.sources[0].src = this.album.url;
         });
       // commentAPI.getComments(this.$route.params.albumID)

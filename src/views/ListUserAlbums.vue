@@ -22,6 +22,7 @@
 
 <script>
 import * as API from '@/api/album';
+import * as UserAPI from '@/api/user';
 
 export default {
   name: 'home',
@@ -45,7 +46,40 @@ export default {
       });
     },
     goAlbum(album) {
-      this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
+      UserAPI.userMe().then((res) => {
+        const currentUser = res.data
+        console.log(album)
+        if (album.visibility === 'public') {
+          this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
+        } else if (album.visibility === 'private' && album.user.id === currentUser.id) {
+          this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
+        } else if (album.visibility === 'protect') {
+          this.$prompt('请输入相册密码', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+          }).then(({ value }) => {
+            if (value === album.password) {
+              this.$router.push({ name: 'showAlbum', params: { albumID: album.id } });
+            } else {
+              this.$message({
+                type: 'info',
+                message: '密码错误'
+              });
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消输入'
+            });
+          });
+        }
+
+
+      })
+
+      // console.log(album)
+
+
     },
   },
   components: {

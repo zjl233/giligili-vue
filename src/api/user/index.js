@@ -13,8 +13,13 @@ const userShow = userName => axios.get(`/api/v1/users/${userName}`)
   .then(res => res.data);
 
 
+const userMe = () => axios.get('/api/v1/user/me')
+  .then(res => res.data);
+
+
 export {
   login,
   register,
   userShow,
+  userMe,
 };

@@ -93,6 +93,7 @@ export default {
         avatar: '',
         region: '',
         visibility: '',
+        password: '',
       },
     };
   },
